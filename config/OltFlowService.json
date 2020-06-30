@@ -1,0 +1,7 @@
+{
+  "enableDhcpOnProvisioning": false,
+  "enableIgmpOnProvisioning": false,
+  "enableEapol": false,
+  "enableDhcpV4": false,
+  "enableDhcpV6": false
+}
