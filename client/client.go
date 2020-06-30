@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 //Client communication point to ONOS API
@@ -46,7 +47,7 @@ func buildEndpointURL(onosAddress, uri string) (string, error) {
 		return "", err
 	}
 
-	oltAppURL.Path = oltAppURL.Path + "/" + uri
+	oltAppURL.Path = strings.TrimRight(oltAppURL.Path, "/") + "/" + strings.TrimLeft(uri, "/")
 
 	return oltAppURL.String(), nil
 }
@@ -66,7 +67,7 @@ func (c Client) PostConfiguration(configName string, dataIn []byte) (err error) 
 	log.Infof("Will post configuration %s to ONOS", configName)
 	log.Debugf("Configuration data %s to be provisioned: %s", configName, string(dataIn))
 
-	_, err, _ = c.callONOSAPI(c.ConfigurationURL + "/" + configName+"?preset=true", "POST", string(dataIn))
+	_, err, _ = c.callONOSAPI(c.ConfigurationURL+"/"+configName+"?preset=true", "POST", string(dataIn))
 	if err != nil {
 		return err
 	}
@@ -81,7 +82,7 @@ func (c Client) ReadConfiguration(configName string) (dataOut []byte, found bool
 	log.Debugf("Will read configuration %s from ONOS", configName)
 
 	found = true
-	dataOut, err, _ = c.callONOSAPI(c.ConfigurationURL + "/" + configName, "GET", "")
+	dataOut, err, _ = c.callONOSAPI(c.ConfigurationURL+"/"+configName, "GET", "")
 	if err != nil {
 		return []byte{}, false, err
 	}
