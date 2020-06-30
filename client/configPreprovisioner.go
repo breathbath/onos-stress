@@ -34,12 +34,12 @@ func NewConfigPreProvisioner(
 }
 
 //PreProvision starting function
-func (mbpp *ConfigPreProvisioner) PreProvision() error {
-	err := mbpp.processConfiguration(lldpLinkProviderServiceName, "ONOS_COMPONENT_LLDPLINKPROVIDER_CONFIG_FILE")
+func (mbpp *ConfigPreProvisioner) PreProvision(postOnly bool) error {
+	err := mbpp.processConfiguration(postOnly, lldpLinkProviderServiceName, "ONOS_COMPONENT_LLDPLINKPROVIDER_CONFIG_FILE")
 	if err != nil {
 		return err
 	}
-	err = mbpp.processConfiguration(oltFlowServiceName, "ONOS_COMPONENT_OLTFLOWSERVICE_CONFIG_FILE")
+	err = mbpp.processConfiguration(postOnly, oltFlowServiceName, "ONOS_COMPONENT_OLTFLOWSERVICE_CONFIG_FILE")
 	if err != nil {
 		return err
 	}
@@ -47,7 +47,7 @@ func (mbpp *ConfigPreProvisioner) PreProvision() error {
 	return nil
 }
 
-func (mbpp *ConfigPreProvisioner) processConfiguration(configurationName, locationName string) (err error) {
+func (mbpp *ConfigPreProvisioner) processConfiguration(postOnly bool, configurationName, locationName string) (err error) {
 	log.Infof("incoming request for ONOS configuration %s", configurationName)
 	dataLocation, err := mbpp.opts.ReadRequiredString(locationName)
 	if err != nil {
@@ -75,14 +75,16 @@ func (mbpp *ConfigPreProvisioner) processConfiguration(configurationName, locati
 		return nil
 	}
 
-	shouldProvision, err := mbpp.shouldProvision(dataToProvision, dataToProvisionMap, configurationName)
-	if err != nil {
-		return err
-	}
+	if !postOnly {
+		shouldProvision, err := mbpp.shouldProvision(dataToProvision, dataToProvisionMap, configurationName)
+		if err != nil {
+			return err
+		}
 
-	if !shouldProvision {
-		log.Infof("configuration %s in ONOS is expected, no provisioning will be triggered", configurationName)
-		return nil
+		if !shouldProvision {
+			log.Infof("configuration %s in ONOS is expected, no provisioning will be triggered", configurationName)
+			return nil
+		}
 	}
 
 	err = mbpp.onosClient.PostConfiguration(configurationName, dataToProvision)

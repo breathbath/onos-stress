@@ -58,7 +58,7 @@ func main() {
 				return
 			}
 
-			err = configPreprovisioner.PreProvision()
+			err = configPreprovisioner.PreProvision(params.ReadBool("POST_ONLY", false))
 			if err != nil {
 				apiErr, ok := err.(error2.ApiError)
 				if !ok {
